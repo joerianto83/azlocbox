@@ -1,10 +1,12 @@
 param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$ResourceGroupName,
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$githubAccount,
-    [Parameter(Mandatory=$true)]
-    [string]$githubBranch
+    [Parameter(Mandatory = $true)]
+    [string]$githubBranch,
+    [Parameter(Mandatory = $true)]
+    [string]$vmName
 )
 
 Write-Host "Starting VM Run Command to wait for deployment and retrieve Pester test results from LocalBox-Client in resource group $ResourceGroupName"
@@ -14,8 +16,9 @@ $Location = (Get-AzVM -ResourceGroupName $ResourceGroupName -Name LocalBox-Clien
 # Check if a RetrievePesterResults run command is already running
 $existingJob = Get-AzVMRunCommand -ResourceGroupName $ResourceGroupName -VMName LocalBox-Client -RunCommandName RetrievePesterResults -ErrorAction SilentlyContinue
 if ($existingJob) {
-    Write-Host "A RetrievePesterResults run command is already provisioned. Skipping new execution." -ForegroundColor Yellow
-} else {
+    Write-Host 'A RetrievePesterResults run command is already provisioned. Skipping new execution.' -ForegroundColor Yellow
+}
+else {
     Set-AzVMRunCommand -ResourceGroupName $ResourceGroupName -VMName LocalBox-Client -RunCommandName RetrievePesterResults -Location $Location -SourceScriptUri "https://raw.githubusercontent.com/$githubAccount/azure_arc/$githubBranch/azure_jumpstart_localbox/artifacts/PowerShell/integration_tests/scripts/Send-PesterResult.ps1" -AsyncExecution
 }
 
@@ -26,17 +29,17 @@ do {
 
     $job = Get-AzVMRunCommand -ResourceGroupName $ResourceGroupName -VMName LocalBox-Client -RunCommandName RetrievePesterResults -Expand InstanceView
 
-    Write-Host "Instance view of job:" -ForegroundColor Green
+    Write-Host 'Instance view of job:' -ForegroundColor Green
     $job.InstanceView
     Start-Sleep -Seconds 60
     $elapsedMinutes += 1
 
     if ($elapsedMinutes -ge $timeoutMinutes) {
-        Write-Host "Timeout of 60 minutes reached. Exiting wait loop to avoid authentication token cache expiration." -ForegroundColor Yellow
+        Write-Host 'Timeout of 60 minutes reached. Exiting wait loop to avoid authentication token cache expiration.' -ForegroundColor Yellow
         break
     }
 
-} while ($job.InstanceView.ExecutionState -eq "Running")
+} while ($job.InstanceView.ExecutionState -eq 'Running')
 
-Write-Host "Job status:" -ForegroundColor Green
+Write-Host 'Job status:' -ForegroundColor Green
 $job
