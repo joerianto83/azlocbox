@@ -1,6 +1,6 @@
 using './main.bicep'
 var subscriptionId = '2a234050-17d0-44a2-9755-08e59607bcd9' // InstantIntranet-Dev-Subs
-var resourceGroupName = 'rg-azlocalbox'
+var resourceGroupName = 'rg-azlocalboxjoe'
 var keyVaultName = 'kv-azlocalbox'
 var uGuid = guid(subscriptionId,'LocalBox')
 param tenantId = az.getSecret(subscriptionId, resourceGroupName, keyVaultName, 'tenantId')
